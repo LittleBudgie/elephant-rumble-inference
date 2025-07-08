@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
 import torch.nn.functional
-from . import audio_file_processor as afp
+import audio_file_processor as afp
 
 class AudioFileVisualizer:
     def __init__(self):
@@ -129,6 +129,12 @@ class AudioFileVisualizer:
             
         blueness = 1-(redness + greenness)
         blueness[blueness<0] = 0
+
+        redness = np.array(redness)
+        greenness = np.array(greenness)
+        blueness = np.array(blueness)
+
+
         #blueness = blueness - np.min(blueness)
         #blueness = blueness / np.max(blueness)/2
         s_db_rgb[:,:,0] = s_db_rgb[:,:,0] * (redness)
@@ -165,8 +171,8 @@ class AudioFileVisualizer:
 
         #print("make sure similarity shape is compatible",s_db_rgb.shape, stretched_similarity.shape)
         fairseq_time = [i*actual_duration/similarity.shape[0] for i in range(similarity.shape[0])]
-        ax2.plot(fairseq_time,similarity_scoresz[start_index:end_index], color='tab:green')
-        ax2.plot(fairseq_time,dissimilarity_scoresz[start_index:end_index], color='tab:red')
+        ax2.plot(fairseq_time,similarity_scoresz[start_index:end_index].numpy(), color='tab:green')
+        ax2.plot(fairseq_time,dissimilarity_scoresz[start_index:end_index].numpy(), color='tab:red')
         ax1.set_xlim(0, duration)
         ax2.set_xlim(0, duration)
 

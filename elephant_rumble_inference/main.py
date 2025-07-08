@@ -4,12 +4,12 @@ import os
 import tempfile
 import time
 import torch
-from .aves_torchaudio_wrapper import AvesTorchaudioWrapper
-from .elephant_rumble_classifier import ElephantRumbleClassifier
-from .audio_file_processor import AudioFileProcessor
-from .audio_file_visualizer import AudioFileVisualizer
-from .raven_file_helper import RavenFileHelper
-from .raven_file_helper import RavenLabel
+from aves_torchaudio_wrapper import AvesTorchaudioWrapper
+from elephant_rumble_classifier import ElephantRumbleClassifier
+from audio_file_processor import AudioFileProcessor
+from audio_file_visualizer import AudioFileVisualizer
+from raven_file_helper import RavenFileHelper
+from raven_file_helper import RavenLabel
 
 # consider: https://www.youtube.com/watch?v=Qw9TmrAIS6E for demos
 
@@ -68,7 +68,7 @@ def parse_args():
     parser.add_argument(
         "-v", "--visualizations-per-audio-file",
         type=int,
-        default=0,
+        default=1,
         help="visualiztions are slow so be patient if you pick more than 1",
     )
     parser.add_argument(
@@ -86,11 +86,13 @@ def parse_args():
     parser.add_argument(
         "--save-scores",
         action="store_true",
+        default=True,
         help="Save classification scores to a file",
     )
     parser.add_argument(
         "-r", "--save-raven",
         action="store_true",
+        default=True,
         help="Save a raven file with found labels",
     )
     parser.add_argument(
@@ -270,3 +272,5 @@ def main():
                     if num_vis >= args.visualizations_per_audio_file:
                         print(f"only doing {num_vis} visualization per file")
                         break
+
+main()
