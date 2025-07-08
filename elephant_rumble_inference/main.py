@@ -80,7 +80,7 @@ def parse_args():
     parser.add_argument(
         "-d", "--duration-of-visualizations",
         type=int,
-        default=15,
+        default=1,
         help="Minutes of audio for a visualization. 15 is nice for wide monitor, 60 is interesting if you don't mind horizontal scrolling",
     )
     parser.add_argument(
