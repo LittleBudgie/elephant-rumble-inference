@@ -12,8 +12,7 @@ This repository is a revised version of the elephant rumble inference model crea
 * Changed defaults for some parameters (automatically save raven file, default number of visualizations per audio file = 1)
 
 ## Installing This Version of the Package
-Can use the same reference video found here for downloading: https://drive.google.com/file/d/1XD7rtsRqkH6iz7TLroElYAwDuVMe7gTr/view
-However, when providing the github link in the pip install, use this line instead:
+You can use the same reference video shared, however, when providing the github link in the pip install, use this line instead:
 ```
         pip install git+https://github.com/LittleBudgie/elephant-rumble-inference.git
 ```
