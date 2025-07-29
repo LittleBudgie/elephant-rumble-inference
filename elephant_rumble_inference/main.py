@@ -10,6 +10,7 @@ from audio_file_processor import AudioFileProcessor
 from audio_file_visualizer import AudioFileVisualizer
 from raven_file_helper import RavenFileHelper
 from raven_file_helper import RavenLabel
+from pydub import AudioSegment
 
 # consider: https://www.youtube.com/watch?v=Qw9TmrAIS6E for demos
 
@@ -106,6 +107,14 @@ def parse_args():
         default=24,
         help="Limit audio hours (Recommend setting to 1 for CPU).",
     )
+    #added
+    parser.add_argument(
+        "--merge-files-in-dir",
+        type=bool,
+        default=False,
+        help="Merges all audio files in each subdirectory of input path in lexographical order. Outputs merged audio file in subdirectory and raven selection table for merged audio file in output."
+    )
+
     args = parser.parse_args()
 
     if len(args.input_files) == 0:
@@ -126,6 +135,38 @@ def initialize_models(model_name):
     atw.eval()
     erc.eval()
     return atw, erc
+
+def get_audio_paths_from_dir(input_dirs):
+    audio_paths = []
+    for dir in input_dirs:
+        for sub_dir in os.walk(dir):
+            files_in_sub_dir = sub_dir[2]
+            for file in files_in_sub_dir:
+                file_type = os.path.splitext(file)[-1].lower()
+                if (file_type == ".wav"):
+                    audio_paths.append(sub_dir[0] + "/" + file)
+    return audio_paths
+
+def get_audio_paths_merged(input_dirs):
+    audio_paths = []
+    for dir in input_dirs:
+        for sub_dir in os.walk(dir):
+            files_in_sub_dir = sub_dir[2]
+            for file in files_in_sub_dir:
+                file_type = os.path.splitext(file)[-1].lower()
+                merged_audio_file = None
+                if (file_type == ".wav"):
+                    curr_file_path = sub_dir[0] + "/" + file
+                    audio_file = AudioSegment.from_file(curr_file_path, format = "wav")
+                    if (merged_audio_file is None):
+                        merged_audio_file = audio_file
+                    else:
+                        merged_audio_file = merged_audio_file + audio_file
+            merged_file_path = sub_dir[0] + "/MERGED.wav"
+            merged_audio = merged_audio_file.export(merged_file_path, format = "wav")
+            audio_paths.append(merged_file_path)
+    return audio_paths
+
 
 
 def classify_audio_file(afp, audio_file, limit_audio_hours, save_file_path):
@@ -196,12 +237,20 @@ def get_windows_torch_hub_dir():
     return os.path.join(home, ".cache", "torch", "hub")
 
 
+
 def main():
     args = parse_args()
     print(f"Input files: {args.input_files}")
     atw, erc = initialize_models(args.model_name)
     afp = AudioFileProcessor(atw, erc, device=DEVICE)
-    for audio_file in args.input_files:
+
+    audio_paths = []
+    if args.merge_files_in_dir:
+        audio_paths = get_audio_paths_merged(args.input_files)
+    else:
+        audio_paths = get_audio_paths_from_dir(args.input_files)
+
+    for audio_file in audio_paths:
         audio_file_without_path = os.path.basename(audio_file)
 
         score_file, raven_file, visualization_dir = choose_save_locations(
