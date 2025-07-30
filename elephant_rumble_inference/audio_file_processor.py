@@ -2,7 +2,7 @@
 import einops
 import torch
 import torchaudio.io as tai
-from triple_buffered_iterator import TripleBufferedIterator
+from .triple_buffered_iterator import TripleBufferedIterator
 
 class AudioFileProcessor:
     def __init__(self, aves_model, elephant_model, rumble_sr=500, device="cuda"):

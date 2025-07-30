@@ -4,12 +4,12 @@ import os
 import tempfile
 import time
 import torch
-from aves_torchaudio_wrapper import AvesTorchaudioWrapper
-from elephant_rumble_classifier import ElephantRumbleClassifier
-from audio_file_processor import AudioFileProcessor
-from audio_file_visualizer import AudioFileVisualizer
-from raven_file_helper import RavenFileHelper
-from raven_file_helper import RavenLabel
+from .aves_torchaudio_wrapper import AvesTorchaudioWrapper
+from .elephant_rumble_classifier import ElephantRumbleClassifier
+from .audio_file_processor import AudioFileProcessor
+from .audio_file_visualizer import AudioFileVisualizer
+from .raven_file_helper import RavenFileHelper
+from .raven_file_helper import RavenLabel
 from pydub import AudioSegment
 
 # consider: https://www.youtube.com/watch?v=Qw9TmrAIS6E for demos

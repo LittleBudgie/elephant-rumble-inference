@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
 import torch.nn.functional
-import audio_file_processor as afp
+from . import audio_file_processor as afp
 
 class AudioFileVisualizer:
     def __init__(self):
