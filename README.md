@@ -19,6 +19,12 @@ You can use the same reference video shared, however, when providing the github 
 
 ## List of Parameters
 This is a list taken from the original developer's main.py
+
+Example of running with parameters: 
+'''
+elephant-rumble-inference "test.wav" --merge-files-in-dir=True
+'''
+
 * --model
     * Specify the model name. Full list here: http://0ape.com/pretrained_models/
 * --save-dir
