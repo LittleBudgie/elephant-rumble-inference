@@ -14,7 +14,7 @@ This repository is a revised version of the elephant rumble inference model crea
 ## Installing This Version of the Package
 You can use the same reference video shared, however, when providing the github link in the pip install, use this line instead:
 ```
-         pip install "git+https://github.com/LittleBudgie/elephant-rumble-inference.git"
+pip install "git+https://github.com/LittleBudgie/elephant-rumble-inference.git"
 ```
 
 ## List of Parameters
