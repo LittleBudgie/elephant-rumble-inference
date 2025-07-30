@@ -43,6 +43,6 @@ This is a list taken from the original developer's main.py
 * --limit-audio-hours
     * Default limit 24
     * Limit audio hours for file
-* --merge-files-in-dir (NEW)
+* --merge-files-in-dir (**NEW**)
     * Merges all audio files in each subdirectory of input path in lexographical order. Outputs merged audio file in subdirectory and raven selection table for merged audio file in output.
     * Default: False
