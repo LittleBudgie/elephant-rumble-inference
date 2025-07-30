@@ -18,7 +18,7 @@ pip install "git+https://github.com/LittleBudgie/elephant-rumble-inference.git"
 ```
 
 ## List of Parameters
-This is a list taken from the original developer's main.py
+This is a list taken from the original developer's main.py. All descriptions of parameters written by the original developers (except --merge-files-in-dir)
 
 Example of code to put into terminal to run with a specified parameter value: 
 ```
