@@ -1,4 +1,4 @@
-# Elephant Rumble Inference (using AVES/HuBERT based transformer models)
+# Elephant Rumble Inference Updated Version
 
 This repository is a revised version of the elephant rumble inference model created by FruitPunchAI (can be found at this link: https://github.com/ramayer/elephant-rumble-inference). 
 
