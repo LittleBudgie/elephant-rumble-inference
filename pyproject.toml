@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "elephant-rumble-inference-two"
+name = "elephant-rumble-inference"
 version = "0.10.0rc1"
 description = "Model and python package to detect Elephant Rumbles in Audio"
 authors = ["Ron M <ramayer+git@gmail.com>"]
