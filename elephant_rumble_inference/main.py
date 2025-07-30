@@ -240,7 +240,7 @@ def get_windows_torch_hub_dir():
 
 def main():
     args = parse_args()
-    print(f"Input files: {args.input_files}")
+    
     atw, erc = initialize_models(args.model_name)
     afp = AudioFileProcessor(atw, erc, device=DEVICE)
 
@@ -249,7 +249,8 @@ def main():
         audio_paths = get_audio_paths_merged(args.input_files)
     else:
         audio_paths = get_audio_paths_from_dir(args.input_files)
-
+    
+    print(f"Input files: {audio_paths}")
     for audio_file in audio_paths:
         audio_file_without_path = os.path.basename(audio_file)
 
