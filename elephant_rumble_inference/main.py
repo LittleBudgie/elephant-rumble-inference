@@ -111,7 +111,7 @@ def parse_args():
         "--merge-raven-tables",
         type=bool,
         default=False,
-        help="Merges all audio files' Raven selection tables in each subdirectory of input path in lexographical order. Outputs merged raven selection table in output."
+        help="Merges all audio files' Raven selection tables in each subdirectory of input path. Outputs merged raven selection table in output."
     )
 
     args = parser.parse_args()

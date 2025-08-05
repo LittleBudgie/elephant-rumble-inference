@@ -49,6 +49,6 @@ elephant-rumble-inference "test.wav" --merge-files-in-dir=True
 * --limit-audio-hours
     * Default limit 24
     * Limit audio hours for file
-* --merge-files-in-dir (**NEW**)
-    * Merges all audio files in each subdirectory of input path in lexographical order. Outputs merged audio file in subdirectory and raven selection table for merged audio file in output.
+* --merge-raven-tables (**NEW**)
+    * Merges all audio files in each subdirectory of input path. Outputs merged raven selection table for merged audio file with all file paths in table.
     * Default: False
