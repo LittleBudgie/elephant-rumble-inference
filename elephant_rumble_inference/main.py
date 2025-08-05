@@ -226,6 +226,7 @@ def main():
 
     for dir in args.input_files:
         audio_paths = []
+        skip = False
         if os.path.isdir(dir):
             audio_paths = get_audio_paths_from_dir(dir)
         else:
@@ -251,6 +252,7 @@ def main():
                 print(score_file, raven_file, visualization_dir)
 
             if (not args.merge_raven_tables and raven_file and os.path.exists(raven_file)) or (args.merge_raven_tables and os.path.exists(merge_path)):
+                skip = True
                 print(f"skipping {raven_file} -- already exists")
                 print(f"(delete {raven_file} if you want to re-process it")
                 continue
@@ -318,8 +320,7 @@ def main():
                             print(f"only doing {num_vis} visualization per file")
                             break
         
-        if args.save_raven and args.merge_raven_tables:
+        if args.save_raven and args.merge_raven_tables and not skip:
             rfh = RavenFileHelper()
             rfh.write_raven_file(all_raven_labels, merge_path)
 
-main()
