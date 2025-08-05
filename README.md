@@ -3,13 +3,12 @@
 This repository is a revised version of the elephant rumble inference model created by FruitPunchAI (can be found at this link: https://github.com/ramayer/elephant-rumble-inference). 
 
 ### Notable Version Updates Include:
-* Can now accept a directory of audio files as an input, with new parameter "--merge-files-in-dir"
-    * If true, merges all audio files in each subdirectory of input path in lexographical order.
-         * Merges into one audio file called MERGED.wav, outputted into the subdirectory.
-         * Uses this merged file to then pass into the model and output one Raven selection table.
+* Can now accept a directory of audio files as an input, with new parameter "--merge-raven-tables"
+    * If true, merges all selection tables into one selection table to output.
+         * Each audio file's individual detections can be found in the Raven selection table through the file path column.
     * If false, goes through all audio files in a directory and runs model on them, outputting Raven selection tables for each of them individually
     * Default is set to false
-* Changed defaults for some parameters (automatically save raven file, default number of visualizations per audio file = 1)
+* Changed defaults for some parameters (automatically save raven file)
 
 ## Installing This Version of the Package
 You can use the same reference video shared, however, when providing the github link in the pip install, use this line instead:
