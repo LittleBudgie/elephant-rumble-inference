@@ -10,7 +10,6 @@ from .audio_file_processor import AudioFileProcessor
 from .audio_file_visualizer import AudioFileVisualizer
 from .raven_file_helper import RavenFileHelper
 from .raven_file_helper import RavenLabel
-from pydub import AudioSegment
 
 # consider: https://www.youtube.com/watch?v=Qw9TmrAIS6E for demos
 
@@ -69,7 +68,7 @@ def parse_args():
     parser.add_argument(
         "-v", "--visualizations-per-audio-file",
         type=int,
-        default=1,
+        default=0,
         help="visualiztions are slow so be patient if you pick more than 1",
     )
     parser.add_argument(
@@ -87,7 +86,7 @@ def parse_args():
     parser.add_argument(
         "--save-scores",
         action="store_true",
-        default=True,
+        default=False,
         help="Save classification scores to a file",
     )
     parser.add_argument(
@@ -109,10 +108,10 @@ def parse_args():
     )
     #added
     parser.add_argument(
-        "--merge-files-in-dir",
+        "--merge-raven-tables",
         type=bool,
         default=False,
-        help="Merges all audio files in each subdirectory of input path in lexographical order. Outputs merged audio file in subdirectory and raven selection table for merged audio file in output."
+        help="Merges all audio files' Raven selection tables in each subdirectory of input path in lexographical order. Outputs merged raven selection table in output."
     )
 
     args = parser.parse_args()
@@ -136,37 +135,14 @@ def initialize_models(model_name):
     erc.eval()
     return atw, erc
 
-def get_audio_paths_from_dir(input_dirs):
+def get_audio_paths_from_dir(dir):
     audio_paths = []
-    for dir in input_dirs:
-        for sub_dir in os.walk(dir):
-            files_in_sub_dir = sub_dir[2]
-            for file in files_in_sub_dir:
-                file_type = os.path.splitext(file)[-1].lower()
-                if (file_type == ".wav"):
-                    audio_paths.append(sub_dir[0] + "/" + file)
+    for path, subdirs, files in os.walk(dir):
+        for file in files:
+            file_type = os.path.splitext(file)[-1].lower()
+            if (file_type == ".wav"):
+                audio_paths.append(path + "/" + file)
     return audio_paths
-
-def get_audio_paths_merged(input_dirs):
-    audio_paths = []
-    for dir in input_dirs:
-        for sub_dir in os.walk(dir):
-            files_in_sub_dir = sub_dir[2]
-            for file in files_in_sub_dir:
-                file_type = os.path.splitext(file)[-1].lower()
-                merged_audio_file = None
-                if (file_type == ".wav"):
-                    curr_file_path = sub_dir[0] + "/" + file
-                    audio_file = AudioSegment.from_file(curr_file_path, format = "wav")
-                    if (merged_audio_file is None):
-                        merged_audio_file = audio_file
-                    else:
-                        merged_audio_file = merged_audio_file + audio_file
-            merged_file_path = sub_dir[0] + "/MERGED.wav"
-            merged_audio = merged_audio_file.export(merged_file_path, format = "wav")
-            audio_paths.append(merged_file_path)
-    return audio_paths
-
 
 
 def classify_audio_file(afp, audio_file, limit_audio_hours, save_file_path):
@@ -182,7 +158,7 @@ def classify_audio_file(afp, audio_file, limit_audio_hours, save_file_path):
         return scores
 
 
-def save_raven_file(audio_file, scores, raven_file, afp):
+def save_raven_file(audio_file, scores, raven_file, afp, return_labels):
     rfh = RavenFileHelper()
     continuous_segments = rfh.find_continuous_segments(scores[:, 1] - scores[:, 0] > 0)
     long_enough_segments = rfh.find_long_enough_segments(continuous_segments, n=3)
@@ -214,18 +190,22 @@ def save_raven_file(audio_file, scores, raven_file, afp):
             ravenfile,
         )
         raven_labels.append(rl)
-    rfh.write_raven_file(raven_labels, raven_file)
+    if return_labels:
+        return raven_labels
+    else:
+        rfh.write_raven_file(raven_labels, raven_file)
+        return []
 
 
 def choose_save_locations(args, audio_file):
-    audio_file_without_path = os.path.basename(audio_file)
+    base_file_path = os.path.basename(audio_file)
     save_dir = args.save_dir
     score_file = raven_file = visualization_dir = None
     os.makedirs(save_dir, exist_ok=True)
     if args.save_scores:
-        score_file = os.path.join(save_dir, audio_file_without_path + ".scores.pt")
+        score_file = os.path.join(save_dir, base_file_path + ".scores.pt")
     if args.save_raven:
-        raven_file = os.path.join(save_dir, audio_file_without_path + ".raven.txt")
+        raven_file = os.path.join(save_dir, base_file_path + ".raven.txt")
     if args.visualizations_per_audio_file > 0:
         visualization_dir = save_dir
     return score_file, raven_file, visualization_dir
@@ -244,83 +224,102 @@ def main():
     atw, erc = initialize_models(args.model_name)
     afp = AudioFileProcessor(atw, erc, device=DEVICE)
 
-    audio_paths = []
-    if args.merge_files_in_dir:
-        audio_paths = get_audio_paths_merged(args.input_files)
-    else:
-        audio_paths = get_audio_paths_from_dir(args.input_files)
-    
-    print(f"Input files: {audio_paths}")
-    for audio_file in audio_paths:
-        audio_file_without_path = os.path.basename(audio_file)
+    for dir in args.input_files:
+        audio_paths = []
+        if os.path.isdir(dir):
+            audio_paths = get_audio_paths_from_dir(dir)
+        else:
+            audio_paths.append(dir)
+        
+        print("Number of files found: " + str(len(audio_paths)))
+        print(f"Input files: {audio_paths}")
 
-        score_file, raven_file, visualization_dir = choose_save_locations(
-            args, audio_file
-        )
-        print(score_file, raven_file, visualization_dir)
-        if raven_file and os.path.exists(raven_file):
-            print(f"skipping {raven_file} -- already exists")
-            print(f"(delete {raven_file} if you want to re-process it")
-            continue
+        all_raven_labels = []
+        merge_path = args.save_dir + "/" + os.path.basename(dir) + ".raven.txt"
 
-        t0 = time.time()
-        scores = classify_audio_file(
-            afp, audio_file, args.limit_audio_hours, score_file
-        )
-        t1 = time.time()
+        if args.merge_raven_tables:
+            print(merge_path)
 
-        if args.save_raven:
-            save_raven_file(audio_file_without_path, scores, raven_file, afp)
+        for audio_file in audio_paths:
+            audio_file_without_path = os.path.basename(audio_file)
 
-        t2 = time.time()
+            score_file, raven_file, visualization_dir = choose_save_locations(
+                args, audio_file
+            )
 
-        if visualization_dir:
-            duration_of_visualizations_min  = args.duration_of_visualizations
-            duration_of_visualizations_secs = args.duration_of_visualizations * 60
+            if not args.merge_raven_tables:
+                print(score_file, raven_file, visualization_dir)
 
-            print("Rendering visualizations...")
-            if args.load_labels_from_raven_file_folder:
-                rfh = RavenFileHelper(args.load_labels_from_raven_file_folder)
-                lbls = rfh.get_all_labels_for_wav_file(audio_file_without_path)
-            else:
-                lbls = []
+            if (not args.merge_raven_tables and raven_file and os.path.exists(raven_file)) or (args.merge_raven_tables and os.path.exists(merge_path)):
+                print(f"skipping {raven_file} -- already exists")
+                print(f"(delete {raven_file} if you want to re-process it")
+                continue
 
+            t0 = time.time()
+            scores = classify_audio_file(
+                afp, audio_file, args.limit_audio_hours, score_file
+            )
+            t1 = time.time()
+
+            if args.save_raven:
+                if (args.merge_raven_tables):
+                    all_raven_labels.extend(save_raven_file(audio_file_without_path, scores, raven_file, afp, True))
+                else:
+                    save_raven_file(audio_file_without_path, scores, raven_file, afp, False)
+
+            t2 = time.time()
+
+            if visualization_dir:
+                duration_of_visualizations_min  = args.duration_of_visualizations
+                duration_of_visualizations_secs = args.duration_of_visualizations * 60
+
+                print("Rendering visualizations...")
+                if args.load_labels_from_raven_file_folder:
+                    rfh = RavenFileHelper(args.load_labels_from_raven_file_folder)
+                    lbls = rfh.get_all_labels_for_wav_file(audio_file_without_path)
+                else:
+                    lbls = []
+
+                rfh = RavenFileHelper()
+                continuous_segments = rfh.find_continuous_segments(scores[:, 1] - scores[:, 0] > 0)
+                long_enough_segments = rfh.find_long_enough_segments(continuous_segments, n=3)
+                interesting_seconds = [afp.score_index_to_time(bt) for bt,et in long_enough_segments]
+                from collections import Counter
+                # 5 minute spectrograms are easier to handle than hour long ones.
+                interesting_times = Counter([int(sec/duration_of_visualizations_secs)*duration_of_visualizations_secs for sec in interesting_seconds])
+                #for element, count in interesting_times.most_common():
+                #    print(f"{element}: {count}")
+                num_vis =0
+                with torch.inference_mode():
+                    for interesting_time, count in interesting_times.most_common():
+                        hour   = (interesting_time) // 60 // 60
+                        minute = (interesting_time // 60) % 60
+                        dttm   = f"{hour:02}:{minute:02}:00"
+                        vis_filename = f"{audio_file_without_path}_{dttm}.png"
+                        vis_path = os.path.join(visualization_dir,vis_filename)
+                        if os.name == 'nt': # windows doesn't allow a filename to have an iso time in it?
+                            vis_path = os.path.join(visualization_dir,f"{audio_file_without_path}_{hour:02}_{minute:02}_00.png")
+                        AudioFileVisualizer().visualize_audio_file_fragment(
+                            f"{audio_file_without_path}, Starting at {dttm}, Classified by {erc.model_name}",
+                            vis_path,
+                            audio_file,
+                            scores[:, 1],
+                            scores[:, 0],
+                            afp,
+                            start_time=interesting_time,
+                            end_time=interesting_time+duration_of_visualizations_secs,
+                            width = 4 * duration_of_visualizations_min,
+                            height = 4,
+                            colormap="clean",
+                            labels=lbls,
+                        )
+                        num_vis += 1
+                        if num_vis >= args.visualizations_per_audio_file:
+                            print(f"only doing {num_vis} visualization per file")
+                            break
+        
+        if args.save_raven and args.merge_raven_tables:
             rfh = RavenFileHelper()
-            continuous_segments = rfh.find_continuous_segments(scores[:, 1] - scores[:, 0] > 0)
-            long_enough_segments = rfh.find_long_enough_segments(continuous_segments, n=3)
-            interesting_seconds = [afp.score_index_to_time(bt) for bt,et in long_enough_segments]
-            from collections import Counter
-            # 5 minute spectrograms are easier to handle than hour long ones.
-            interesting_times = Counter([int(sec/duration_of_visualizations_secs)*duration_of_visualizations_secs for sec in interesting_seconds])
-            #for element, count in interesting_times.most_common():
-            #    print(f"{element}: {count}")
-            num_vis =0
-            with torch.inference_mode():
-                for interesting_time, count in interesting_times.most_common():
-                    hour   = (interesting_time) // 60 // 60
-                    minute = (interesting_time // 60) % 60
-                    dttm   = f"{hour:02}:{minute:02}:00"
-                    vis_filename = f"{audio_file_without_path}_{dttm}.png"
-                    vis_path = os.path.join(visualization_dir,vis_filename)
-                    if os.name == 'nt': # windows doesn't allow a filename to have an iso time in it?
-                        vis_path = os.path.join(visualization_dir,f"{audio_file_without_path}_{hour:02}_{minute:02}_00.png")
-                    AudioFileVisualizer().visualize_audio_file_fragment(
-                        f"{audio_file_without_path}, Starting at {dttm}, Classified by {erc.model_name}",
-                        vis_path,
-                        audio_file,
-                        scores[:, 1],
-                        scores[:, 0],
-                        afp,
-                        start_time=interesting_time,
-                        end_time=interesting_time+duration_of_visualizations_secs,
-                        width = 4 * duration_of_visualizations_min,
-                        height = 4,
-                        colormap="clean",
-                        labels=lbls,
-                    )
-                    num_vis += 1
-                    if num_vis >= args.visualizations_per_audio_file:
-                        print(f"only doing {num_vis} visualization per file")
-                        break
+            rfh.write_raven_file(all_raven_labels, merge_path)
 
 main()

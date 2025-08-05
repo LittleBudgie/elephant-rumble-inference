@@ -13,7 +13,6 @@ librosa = ">=0.10.0" # Google colab already has a better version; this automatic
 matplotlib = ">=3.9.0"
 duckdb = ">=0.10.0"
 numpy = "<2.0"  # wave2vec conflict with 2.0
-pydub = ">=0.25.1" #needed if using merge audio files parameter
 
 [build-system]
 requires = ["poetry-core"]
