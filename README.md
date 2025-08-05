@@ -17,11 +17,11 @@ pip install "git+https://github.com/LittleBudgie/elephant-rumble-inference.git"
 ```
 
 ## List of Parameters
-This is a list taken from the original developer's main.py. All descriptions of parameters written by the original developers (except --merge-files-in-dir)
+This is a list taken from the original developer's main.py. All descriptions of parameters written by the original developers (except --merge-raven-tables)
 
 Example of code to put into terminal to run with a specified parameter value: 
 ```
-elephant-rumble-inference "test.wav" --merge-files-in-dir=True
+elephant-rumble-inference "test.wav" ---merge-raven-tables=True
 ```
 
 * --model
